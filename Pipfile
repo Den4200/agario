@@ -10,6 +10,7 @@ pre-commit = "*"
 [packages]
 arcade = "~=2.3"
 arcade-ui = "*"
+pyfrost = "*"
 
 [requires]
 python_version = "3.8"
