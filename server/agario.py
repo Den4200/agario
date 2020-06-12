@@ -20,17 +20,26 @@ class Agario(Cog, route='agario'):
     ) -> None:
         user = Memory.logged_in_users[id_]
 
-        Agario.players[id_] = {
-            'object': user,
-            'score': 0
-        }
-
         kwargs['client_send']({
             'headers': {
                 'path': 'agario/post_join',
                 'status': Status.SUCCESS.value
-            }
+            },
+            'players': [
+                {
+                    'username': player['object'].username,
+                    'id': player['object'].id,
+                    'score': player['score'],
+                    'pos': player['object'].pos
+                }
+                for player in Agario.players
+            ]
         })
+
+        Agario.players[id_] = {
+            'object': user,
+            'score': 0
+        }
 
         logger.info(f'{user.username} joined the game.')
 
@@ -67,7 +76,7 @@ class Agario(Cog, route='agario'):
         if user is None:
             return
 
-        user.pos = data['pos']
+        user['object'].pos = data['pos']
 
         for player in Agario.players.values():
             if player.id == id_:
@@ -79,4 +88,30 @@ class Agario(Cog, route='agario'):
                 },
                 'id': id_,
                 'pos': data['pos']
+            })
+
+    @auth_required
+    def new_score(
+        data: Dict[str, Any],
+        token: str,
+        id_: str,
+        **kwargs: Any
+    ) -> None:
+        user = Agario.players.get(id_)
+
+        if user is None:
+            return
+
+        user['object'].score = data['score']
+
+        for player in Agario.players.values():
+            if player.id == id_:
+                continue
+
+            kwargs['send'](player.conn, {
+                'headers': {
+                    'path': 'agario/new_score'
+                },
+                'id': id_,
+                'score': data['score']
             })
