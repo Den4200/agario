@@ -3,7 +3,6 @@ from typing import Any, Dict
 
 from frost.ext import Cog
 from frost.server import auth_required, logger, Memory
-from frost.server.database import managed_session
 
 from server.headers import Status
 from server.objects import GameState, Player

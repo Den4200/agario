@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
 from frost.client.events import EventStatus
-from frost.client.objects import Memory
 from frost.ext import Cog
 
 
