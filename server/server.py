@@ -2,6 +2,8 @@ from pathlib import Path
 
 from frost import FrostServer
 
+from server.agario import Agario
+
 
 class Server(FrostServer):
 
@@ -12,3 +14,6 @@ class Server(FrostServer):
             init_db()
 
         super().__init__(file)
+
+        # Load up cogs
+        Agario()
