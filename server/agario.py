@@ -6,10 +6,10 @@ from frost.server import auth_required, logger, Memory
 from frost.server.database import managed_session
 
 from server.headers import Status
+from server.objects import GameState, Player
 
 
 class Agario(Cog, route='agario'):
-    players = dict()
 
     @auth_required
     def join(
@@ -25,21 +25,10 @@ class Agario(Cog, route='agario'):
                 'path': 'agario/post_join',
                 'status': Status.SUCCESS.value
             },
-            'players': [
-                {
-                    'username': player['object'].username,
-                    'id': player['object'].id,
-                    'score': player['score'],
-                    'pos': player['object'].pos
-                }
-                for player in Agario.players
-            ]
+            'game_state': GameState.to_dict()
         })
 
-        Agario.players[id_] = {
-            'object': user,
-            'score': 0
-        }
+        GameState.players[id_] = Player(user.id, user.username)
 
         logger.info(f'{user.username} joined the game.')
 
@@ -51,7 +40,7 @@ class Agario(Cog, route='agario'):
         **kwargs: Any
     ) -> None:
         try:
-            Agario.players.pop(id_)
+            GameState.players.pop(id_)
 
         except KeyError:
             pass
@@ -71,24 +60,9 @@ class Agario(Cog, route='agario'):
         id_: str,
         **kwargs: Any
     ) -> None:
-        user = Agario.players.get(id_)
-
-        if user is None:
-            return
-
-        user['object'].pos = data['pos']
-
-        for player in Agario.players.values():
-            if player.id == id_:
-                continue
-
-            kwargs['send'](player.conn, {
-                'headers': {
-                    'path': 'agario/send_pos'
-                },
-                'id': id_,
-                'pos': data['pos']
-            })
+        player = GameState.players.get(id_)
+        if player is not None:
+            player.pos = data['pos']
 
     @auth_required
     def new_score(
@@ -97,21 +71,6 @@ class Agario(Cog, route='agario'):
         id_: str,
         **kwargs: Any
     ) -> None:
-        user = Agario.players.get(id_)
-
-        if user is None:
-            return
-
-        user['object'].score = data['score']
-
-        for player in Agario.players.values():
-            if player.id == id_:
-                continue
-
-            kwargs['send'](player.conn, {
-                'headers': {
-                    'path': 'agario/new_score'
-                },
-                'id': id_,
-                'score': data['score']
-            })
+        player = Agario.players.get(id_)
+        if player is not None:
+            player.score = data['score']
