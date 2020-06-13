@@ -1,4 +1,3 @@
-
 from typing import Any, Dict
 
 from frost.ext import Cog
@@ -6,9 +5,23 @@ from frost.server import auth_required, logger, Memory
 
 from server.headers import Status
 from server.objects import GameState, Player
+from server.scheduler import Scheduler
 
 
 class Agario(Cog, route='agario'):
+
+    def __init__(self) -> None:
+        Scheduler.schedule(self._send_game_state, 1 / 64, repeat=True)
+
+    @staticmethod
+    def _send_game_state() -> None:
+        for player in GameState.players:
+            player.send({
+                'headers': {
+                    'path': 'agario/game_state'
+                },
+                'game_state': GameState.to_dict()
+            })
 
     @auth_required
     def join(
@@ -27,7 +40,7 @@ class Agario(Cog, route='agario'):
             'game_state': GameState.to_dict()
         })
 
-        GameState.players[id_] = Player(user.id, user.username)
+        GameState.players[id_] = Player(user.id, user.username, (0, 0), kwargs['client_send'])
 
         logger.info(f'{user.username} joined the game.')
 

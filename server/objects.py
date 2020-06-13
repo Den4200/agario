@@ -1,13 +1,23 @@
-from typing import Dict, Tuple, Union
+from typing import Callable, Dict, Optional, Tuple, Union
 
 
 class Player:
 
-    def __init__(self, id: int, username: str, pos: Tuple[float, float], score: int = 0) -> None:
+    def __init__(
+        self,
+        id: int,
+        username: str,
+        pos: Tuple[float, float],
+        score: int = 0,
+        send_func: Optional[Callable] = None
+    ) -> None:
         self.id = id
         self.username = username
         self.pos = pos
         self.score = score
+
+        if send_func is not None:
+            self.send = send_func
 
     def to_dict(self) -> Dict[str, Union[str, int]]:
         return {
