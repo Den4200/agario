@@ -10,4 +10,4 @@ class Agario(Cog, route='agario'):
         EventStatus.join_game = data['headers']['status']
 
     def post_leave(data: Dict[str, Any]) -> None:
-        EventStatus.leave_game = data['jeaders']['status']
+        EventStatus.leave_game = data['headers']['status']
