@@ -50,7 +50,7 @@ class Server(FrostServer):
                         Scheduler.collect(now - prev)
                         prev = now
 
-                        time.sleep(0.1)
+                        time.sleep(0.001)
                     except KeyboardInterrupt:
                         run = False
                         break
